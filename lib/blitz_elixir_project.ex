@@ -6,9 +6,9 @@ defmodule BlitzElixirProject do
 
   alias BlitzElixirProject.{Riot, Tracker}
 
-  @spec get_and_track_recently_played_summoners(String.t, String.t, keyword) ::
+  @spec track_recent_opponents(String.t, String.t, keyword) ::
           {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, [String.t]}
-  def get_and_track_recently_played_summoners(summoner_name, region, opts \\ []) do
+  def track_recent_opponents(summoner_name, region, opts \\ []) do
     with {:ok, %Riot.Summoner{} = summoner} <- Riot.fetch_summoner_by_name(summoner_name, region),
          {:ok, summoner_list} <- Riot.fetch_recently_played_summoners(summoner, opts[:matches] || 5),
          {:ok, _} <- Tracker.spawn_summoner_trackers(summoner_list, opts)

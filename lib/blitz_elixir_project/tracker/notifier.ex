@@ -17,7 +17,7 @@ defmodule BlitzElixirProject.Tracker.Notifier do
 
   @spec is_next_match?(Riot.Summoner.t, String.t) :: {true, String.t} | false
   def is_next_match?(summoner, last_match_id) do
-    with {:ok, [match_id | _]} <- Riot.fetch_match_ids_by_puuid(summoner.region, summoner.puuid, 1) do
+    with {:ok, [match_id | _]} <- Riot.fetch_match_ids_by_puuid(summoner.puuid, 1, summoner.region) do
       if match_id !== last_match_id do
         {true, match_id}
       else

@@ -18,48 +18,48 @@ defmodule BlitzElixirProject.Riot.HTTPTest do
 
   describe "summoners_by_name/2" do
     test "success: gets requested user", context do
-      assert {:ok, summoner} = HTTP.summoners_by_name(context.region, context.name)
+      assert {:ok, summoner} = HTTP.summoners_by_name(context.name, context.region)
       assert summoner.name === context.name
     end
 
     test "failure: gets non-existent user", context do
-      assert {:error, error} = HTTP.summoners_by_name(context.region, "")
+      assert {:error, error} = HTTP.summoners_by_name("", context.region)
       assert error.status_code === 403
     end
   end
 
   describe "summoners_by_puuid/2" do
     test "success: gets requested user", context do
-      assert {:ok, summoner} = HTTP.summoners_by_puuid(context.region, context.puuid)
+      assert {:ok, summoner} = HTTP.summoners_by_puuid(context.puuid, context.region)
       assert summoner.puuid === context.puuid
     end
 
     test "failure: gets non-existent user", context do
-      assert {:error, error} = HTTP.summoners_by_puuid(context.region, "")
+      assert {:error, error} = HTTP.summoners_by_puuid("", context.region)
       assert error.status_code === 403
     end
   end
 
   describe "matches_by_puuid/3" do
     test "success: gets list of matches", context do
-      assert {:ok, matches} = HTTP.matches_by_puuid(context.region, context.puuid, 5)
+      assert {:ok, matches} = HTTP.matches_by_puuid(context.puuid, 5, context.region)
       assert length(matches) > 0
     end
 
     test "failure: gets non-existent user list of matches", context do
-      assert {:error, error} = HTTP.matches_by_puuid(context.region, "", 5)
+      assert {:error, error} = HTTP.matches_by_puuid("", context.region, 5)
       assert error.status_code === 403
     end
   end
 
   describe "matches/2" do
     test "success: gets match", context do
-      assert {:ok, match} = HTTP.matches(context.region, context.match_id)
+      assert {:ok, match} = HTTP.matches(context.match_id, context.region)
       assert match.match_id === context.match_id
     end
 
     test "failure: gets non-existent match", context do
-      assert {:error, error} = HTTP.matches(context.region, "")
+      assert {:error, error} = HTTP.matches("", context.region)
       assert error.status_code === 403
     end
   end

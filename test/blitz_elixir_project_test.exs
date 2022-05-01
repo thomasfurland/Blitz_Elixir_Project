@@ -13,16 +13,16 @@ defmodule BlitzElixirProjectTest do
       opts: [matches: 20, pid: self(), agent: agent, supervisor: supervisor]
     }
   end
-  describe "get_and_track_recently_played_summoners/3" do
+  describe "track_recent_opponents/3" do
     test "success: gets recently played summoners and starts trackers", %{name: name, region: region, opts: opts} do
-      assert summoners = BlitzElixirProject.get_and_track_recently_played_summoners(name, region, opts)
+      assert summoners = BlitzElixirProject.track_recent_opponents(name, region, opts)
       assert length(summoners) > 0
 
       assert_received :hello
     end
 
     test "failure: uses non-existent name to get recently played summoners", %{region: region, opts: opts} do
-      assert {:error, error} = BlitzElixirProject.get_and_track_recently_played_summoners("", region, opts)
+      assert {:error, error} = BlitzElixirProject.track_recent_opponents("", region, opts)
       assert error.status_code === 9001
     end
   end

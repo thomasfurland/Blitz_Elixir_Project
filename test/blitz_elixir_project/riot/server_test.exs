@@ -21,7 +21,7 @@ defmodule BlitzElixirProject.Riot.ServerTest do
 
     test "failure: fetch incorrect server", context do
       assert {:error, error} = Server.from_region(context.bad_region)
-      assert error === "region is incorrect or not supported"
+      assert error === "region [] is incorrect or not supported"
     end
   end
 end
