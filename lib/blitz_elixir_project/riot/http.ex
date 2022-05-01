@@ -1,8 +1,12 @@
 defmodule BlitzElixirProject.Riot.HTTP do
 
+  @type http_response :: %{body: any(), status_code: any()}
+
   alias BlitzElixirProject.Riot.{Match, Summoner, Server}
   alias BlitzElixirProject.Config
 
+  @spec summoners_by_name(String.t, String.t) ::
+          {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Summoner.t}
   def summoners_by_name(region, name) do
     path = "/lol/summoner/v4/summoners/by-name/#{name}"
 
@@ -39,6 +43,8 @@ defmodule BlitzElixirProject.Riot.HTTP do
     |> URI.encode_query
   end
 
+  @spec summoners_by_puuid(String.t, String.t) ::
+          {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Summoner.t}
   def summoners_by_puuid(region, puuid) do
     path = "/lol/summoner/v4/summoners/by-puuid/#{puuid}"
 
@@ -58,6 +64,8 @@ defmodule BlitzElixirProject.Riot.HTTP do
     end
   end
 
+  @spec matches_by_puuid(String.t, String.t, integer) ::
+          {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, list}
   def matches_by_puuid(region, puuid, count) do
     path = "/lol/match/v5/matches/by-puuid/#{puuid}/ids"
     params = %{"count" => count}
@@ -73,6 +81,8 @@ defmodule BlitzElixirProject.Riot.HTTP do
     end
   end
 
+  @spec matches(String.t, String.t) ::
+          {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Match.t}
   def matches(region, match_id) do
     path = "/lol/match/v5/matches/#{match_id}"
     with {:ok, server} <- Server.from_region(region),

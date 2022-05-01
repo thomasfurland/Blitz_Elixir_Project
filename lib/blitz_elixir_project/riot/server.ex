@@ -1,8 +1,11 @@
 defmodule BlitzElixirProject.Riot.Server do
   defstruct [:region_uri, :continent_uri]
 
+  @type t :: %__MODULE__{region_uri: String.t, continent_uri: String.t}
+
   alias BlitzElixirProject.Config
 
+  @spec from_region(any) :: {:error, String.t} | {:ok, __MODULE__.t}
   def from_region(region) do
     case get_continental_uri(region) do
       nil -> {:error, "region is incorrect or not supported"}

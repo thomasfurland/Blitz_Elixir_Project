@@ -14,10 +14,12 @@ defmodule BlitzElixirProject.Tracker.SummonerTracker do
     {:ok, state, {:continue, :start_loop}}
   end
 
+  @spec start_link(keyword) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(args) do
     GenServer.start_link(__MODULE__, args)
   end
 
+  @spec delete(atom | pid) :: :ok
   def delete(pid) do
     GenServer.cast(pid, :shutdown)
   end
