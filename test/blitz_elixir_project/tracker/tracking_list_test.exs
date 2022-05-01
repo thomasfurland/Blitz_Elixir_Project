@@ -5,9 +5,9 @@ defmodule BlitzElixirProject.Tracker.TrackingListTest do
   alias BlitzElixirProject.Fixtures
 
   setup do
-    {:ok, pid} = TrackingList.start_link(%{}, name: :test_agent)
+    {:ok, agent} = Fixtures.test_agent()
     %{
-      agent: pid,
+      agent: agent,
       summoner: Fixtures.valid_summoner(),
       pid: self()
     }

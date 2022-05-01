@@ -9,7 +9,8 @@ defmodule BlitzElixirProject.Application do
   def start(_type, _args) do
     children = [
       {BlitzElixirProject.Tracker.TrackingList, %{}},
-      {DynamicSupervisor, strategy: :one_for_one, name: BlitzElixirProject.TrackerSupervisor}
+      {DynamicSupervisor, strategy: :one_for_one, name: BlitzElixirProject.TrackerSupervisor},
+      {Registry, keys: :unique, name: BlitzElixirProject.Registry}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

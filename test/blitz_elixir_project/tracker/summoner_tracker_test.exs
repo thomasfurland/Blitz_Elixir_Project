@@ -5,7 +5,7 @@ defmodule BlitzElixirProject.Tracker.SummonerTrackerTest do
   alias BlitzElixirProject.Fixtures
 
   setup do
-    {:ok, agent} = TrackingList.start_link(%{}, name: :summoner_tracker_test)
+    {:ok, agent} = Fixtures.test_agent()
     %{
       summoner: Fixtures.valid_summoner(),
       agent: agent

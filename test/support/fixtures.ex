@@ -1,6 +1,6 @@
 defmodule BlitzElixirProject.Fixtures do
 
-  alias BlitzElixirProject.Riot
+  alias BlitzElixirProject.{Riot, Tracker}
 
   def valid_summoner() do
     %Riot.Summoner{
@@ -10,4 +10,14 @@ defmodule BlitzElixirProject.Fixtures do
     }
   end
 
+  def test_agent do
+    Tracker.TrackingList.start_link(%{}, name: {
+      :via, Registry, {BlitzElixirProject.Registry, {:agent, self()}}
+    })
+  end
+  def test_supervisor do
+    DynamicSupervisor.start_link(strategy: :one_for_one, name: {
+      :via, Registry, {BlitzElixirProject.Registry, {:sup, self()}}
+    })
+  end
 end

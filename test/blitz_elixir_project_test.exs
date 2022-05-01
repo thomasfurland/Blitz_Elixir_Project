@@ -1,12 +1,12 @@
 defmodule BlitzElixirProjectTest do
   use ExUnit.Case, async: true
 
-  alias BlitzElixirProject.{Fixtures, Tracker}
+  alias BlitzElixirProject.Fixtures
 
   setup do
     valid_summoner = Fixtures.valid_summoner()
-    {:ok, agent} = Tracker.TrackingList.start_link(%{}, name: :main_tracker_test)
-    {:ok, supervisor} = DynamicSupervisor.start_link(strategy: :one_for_one, name: :main_tracker_sup_test)
+    {:ok, agent} = Fixtures.test_agent()
+    {:ok, supervisor} = Fixtures.test_supervisor()
     %{
       name: valid_summoner.name,
       region: valid_summoner.region,

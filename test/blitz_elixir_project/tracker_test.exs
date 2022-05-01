@@ -7,8 +7,8 @@ defmodule BlitzElixirProject.TrackerTest do
 
     summoner1 = Fixtures.valid_summoner()
     summoner2 = summoner1 |> Map.replace(:puuid, "100")
-    {:ok, agent} = Tracker.TrackingList.start_link(%{}, name: :tracker_test)
-    {:ok, supervisor} = DynamicSupervisor.start_link(strategy: :one_for_one, name: :tracker_sup_test)
+    {:ok, agent} = Fixtures.test_agent()
+    {:ok, supervisor} = Fixtures.test_supervisor()
     pid = self()
 
     %{
