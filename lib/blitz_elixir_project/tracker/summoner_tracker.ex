@@ -8,6 +8,7 @@ defmodule BlitzElixirProject.Tracker.SummonerTracker do
     state = %{
       summoner: args[:summoner],
       last_match_id: "",
+      expiry: create_expiry(),
       agent: args[:agent] || TrackingList,
       pid: args[:pid] #for testing... used to send message back to test process
     }
@@ -19,17 +20,20 @@ defmodule BlitzElixirProject.Tracker.SummonerTracker do
     GenServer.start_link(__MODULE__, args)
   end
 
-  @spec delete(atom | pid) :: :ok
-  def delete(pid) do
-    GenServer.cast(pid, :shutdown)
+  @spec extend(atom | pid) :: :ok
+  def extend(pid) do
+    GenServer.cast(pid, :extend)
   end
 
-  def handle_cast(:shutdown, state), do: {:stop, :normal, state}
+  def handle_cast(:extend, %{expiry: expiry} = state) do
+    new_state = Map.replace(state, :extend, update_expiry(expiry))
+    {:noreply, new_state}
+  end
 
   def handle_continue(:start_loop, %{summoner: summoner, agent: agent} = state) do
     TrackingList.put(agent, summoner, self())
     Process.send(self(), :check_status, [])
-    Process.send_after(self(), :expire, Config.tracker_expiry())
+    Process.send_after(self(), :check_expired, Config.tracker_interval())
     {:noreply, state}
   end
 
@@ -39,7 +43,23 @@ defmodule BlitzElixirProject.Tracker.SummonerTracker do
     {:noreply, new_state}
   end
 
-  def handle_info(:expire, state), do: {:stop, :normal, state}
+  def handle_info(:check_expired, %{expiry: expiry} = state) do
+    if is_expired?(expiry) do
+      {:stop, :normal, state}
+    else
+      Process.send_after(self(), :check_expired, Config.tracker_interval())
+      {:noreply, state}
+    end
+  end
 
   def terminate(_reason, %{summoner: summoner, agent: agent}), do: TrackingList.delete(agent, summoner)
+
+  defp create_expiry, do: update_expiry(DateTime.now!("Etc/UTC"))
+  defp update_expiry(expiry), do: DateTime.add(expiry, Config.tracker_expiry, :millisecond)
+  defp is_expired?(expiry) do
+    case DateTime.compare(DateTime.now!("Etc/UTC"), expiry) do
+      :gt -> true
+      _ -> false
+    end
+  end
 end

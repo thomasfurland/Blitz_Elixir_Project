@@ -13,7 +13,7 @@ defmodule BlitzElixirProject.Tracker.SummonerTrackerTest do
   end
 
   describe "start_link/1" do
-    test "success: creates summoner_tracker", context do
+    test "success: creates summoner_tracker and shutsdown", context do
       assert {:ok, pid} = SummonerTracker.start_link(
         [
           summoner: context.summoner,
@@ -25,6 +25,8 @@ defmodule BlitzElixirProject.Tracker.SummonerTrackerTest do
       assert %{} !== TrackingList.fetch_all(context.agent)
 
       assert_received :hello
+      Process.sleep(100)
+      assert Process.alive?(pid) === false
     end
   end
 end

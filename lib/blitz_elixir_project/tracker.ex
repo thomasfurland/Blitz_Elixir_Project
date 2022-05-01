@@ -24,8 +24,8 @@ defmodule BlitzElixirProject.Tracker do
       nil ->
         start_tracker(supervisor, args)
       pid ->
-        SummonerTracker.delete(pid)
-        start_tracker(supervisor, args)
+        SummonerTracker.extend(pid)
+        {:ok, pid}
     end
   end
 

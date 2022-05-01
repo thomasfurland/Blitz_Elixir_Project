@@ -1,5 +1,5 @@
 defmodule BlitzElixirProjectTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias BlitzElixirProject.{Fixtures, Tracker}
 
@@ -14,13 +14,14 @@ defmodule BlitzElixirProjectTest do
     }
   end
   describe "track_recent_opponents/3" do
+    @tag :focus
     test "success: gets recently played summoners and starts trackers", %{name: name, region: region, opts: opts} do
       assert summoners = BlitzElixirProject.track_recent_opponents(name, region, opts)
       assert length(summoners) > 0
 
-      assert_received :hello
+      assert_receive :hello
     end
-
+    @tag :focus
     test "failure: uses non-existent name to get recently played summoners", %{region: region, opts: opts} do
       assert {:error, error} = BlitzElixirProject.track_recent_opponents("", region, opts)
       assert error.status_code === 9001

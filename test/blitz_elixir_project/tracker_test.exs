@@ -38,16 +38,8 @@ defmodule BlitzElixirProject.TrackerTest do
 
       assert %{active: 1} = DynamicSupervisor.count_children(context.supervisor)
       assert_receive :hello
-    end
-
-    test "success: overwrites same summoner tracker", context do
-      assert {:ok, _} = Tracker.spawn_summoner_tracker(context.summoner, context.opts)
-      assert_receive :hello
 
       assert {:ok, _} = Tracker.spawn_summoner_tracker(context.summoner, context.opts)
-      assert_receive :hello
-
-      Process.sleep(50)
       assert %{active: 1} = DynamicSupervisor.count_children(context.supervisor)
     end
   end

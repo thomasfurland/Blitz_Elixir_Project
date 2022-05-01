@@ -8,29 +8,25 @@ defmodule BlitzElixirProject.Riot do
   @spec fetch_summoner_by_name(String.t, String.t) ::
           {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Summoner.t}
   def fetch_summoner_by_name(name, region) do
-    http_module = Config.http()
-    http_module.summoners_by_name(name, region)
+    apply(Config.http(), :summoners_by_name, [name, region])
   end
 
   @spec fetch_summoner_by_puuid(String.t, String.t) ::
   {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Summoner.t}
   def fetch_summoner_by_puuid(puuid, region) do
-    http_module = Config.http()
-    http_module.summoners_by_puuid(puuid, region)
+    apply(Config.http(), :summoners_by_puuid, [puuid, region])
   end
 
   @spec fetch_match(String.t, String.t) ::
           {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Match.t}
   def fetch_match(match_id, region) do
-    http_module = Config.http()
-    http_module.matches(match_id, region)
+    apply(Config.http(), :matches, [match_id, region])
   end
 
   @spec fetch_match_ids_by_puuid(any, any, any) ::
           {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, list}
   def fetch_match_ids_by_puuid(puuid, count, region) do
-    http_module = Config.http()
-    http_module.matches_by_puuid(puuid, count, region)
+    apply(Config.http(), :matches_by_puuid, [puuid, count, region])
   end
 
   @spec fetch_recently_played_summoners(Summoner.t, integer) ::
