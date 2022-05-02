@@ -9,24 +9,77 @@ defmodule BlitzElixirProject.Riot.HTTP do
           {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Summoner.t}
   def summoners_by_name(name, region) do
     path = "/lol/summoner/v4/summoners/by-name/#{name}"
+    with {:ok, response} <- regional_request(path, region) do
+      {:ok, summoner_from_response(response, region)}
+    end
+  end
 
+  defp summoner_from_response(response, region) do
+    response
+    |> Map.put("region", region)
+    |> Summoner.from_map()
+  end
+
+  @spec summoners_by_puuid(String.t, String.t) ::
+          {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Summoner.t}
+  def summoners_by_puuid(puuid, region) do
+    path = "/lol/summoner/v4/summoners/by-puuid/#{puuid}"
+    with {:ok, response} <- regional_request(path, region) do
+      {:ok, summoner_from_response(response, region)}
+    end
+  end
+
+  @spec matches_by_puuid(String.t, String.t, integer) ::
+          {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, list}
+  def matches_by_puuid(puuid, count, region) do
+    path = "/lol/match/v5/matches/by-puuid/#{puuid}/ids"
+    params = %{"count" => count}
+    continental_request(path, region, params)
+  end
+
+  @spec matches(String.t, String.t) ::
+          {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Match.t}
+  def matches(match_id, region) do
+    path = "/lol/match/v5/matches/#{match_id}"
+    with {:ok, response} <- continental_request(path, region) do
+      {:ok, match_from_response(response, region)}
+    end
+  end
+
+  defp match_from_response(response, region) do
+    response
+    |> Map.put("region", region)
+    |> Match.from_map()
+  end
+
+  defp regional_request(url_path, region, params \\ %{}) do
     with {:ok, server} <- Server.from_region(region),
-         {:ok, url} <- get_url(server.region_uri, path),
-         {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- HTTPoison.get(url),
+         {:ok, url} <- get_url(server.region_uri, url_path, params)
+    do
+      send_request(url)
+    end
+  end
+
+  defp continental_request(url_path, region, params \\ %{}) do
+    with {:ok, server} <- Server.from_region(region),
+         {:ok, url} <- get_url(server.continent_uri, url_path, params)
+    do
+      send_request(url)
+    end
+  end
+
+  defp send_request(url) do
+    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- HTTPoison.get(url),
          {:ok, response_body} <- Jason.decode(body)
     do
-      summoner =
-        response_body
-        |> Map.put("region", region)
-        |> Summoner.from_map()
-      {:ok, summoner}
+      {:ok, response_body}
     else
       {:ok, %HTTPoison.Response{body: body, status_code: status}} -> {:error, %{body: body, status_code: status}}
       error -> error
     end
   end
 
-  defp get_url(uri, path, params \\ %{}) do
+  defp get_url(uri, path, params) do
     with {:ok, uri} <- URI.new(uri) do
       url =
         uri
@@ -41,63 +94,5 @@ defmodule BlitzElixirProject.Riot.HTTP do
     params
     |> Map.put("api_key", Config.api_key())
     |> URI.encode_query
-  end
-
-  @spec summoners_by_puuid(String.t, String.t) ::
-          {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Summoner.t}
-  def summoners_by_puuid(puuid, region) do
-    path = "/lol/summoner/v4/summoners/by-puuid/#{puuid}"
-
-    with {:ok, server} <- Server.from_region(region),
-         {:ok, url} <- get_url(server.region_uri, path),
-         {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- HTTPoison.get(url),
-         {:ok, response_body} <- Jason.decode(body)
-    do
-      summoner =
-        response_body
-        |> Map.put("region", region)
-        |> Summoner.from_map()
-      {:ok, summoner}
-    else
-      {:ok, %HTTPoison.Response{body: body, status_code: status}} -> {:error, %{body: body, status_code: status}}
-      error -> error
-    end
-  end
-
-  @spec matches_by_puuid(String.t, String.t, integer) ::
-          {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, list}
-  def matches_by_puuid(puuid, count, region) do
-    path = "/lol/match/v5/matches/by-puuid/#{puuid}/ids"
-    params = %{"count" => count}
-    with {:ok, server} <- Server.from_region(region),
-         {:ok, url} <- get_url(server.continent_uri, path, params),
-         {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- HTTPoison.get(url),
-         {:ok, response_body} <- Jason.decode(body)
-    do
-      {:ok, response_body}
-    else
-      {:ok, %HTTPoison.Response{body: body, status_code: status}} -> {:error, %{body: body, status_code: status}}
-      error -> error
-    end
-  end
-
-  @spec matches(String.t, String.t) ::
-          {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Match.t}
-  def matches(match_id, region) do
-    path = "/lol/match/v5/matches/#{match_id}"
-    with {:ok, server} <- Server.from_region(region),
-         {:ok, url} <- get_url(server.continent_uri, path),
-         {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- HTTPoison.get(url),
-         {:ok, response_body} <- Jason.decode(body)
-    do
-      match =
-        response_body
-        |> Map.put("region", region)
-        |> Match.from_map()
-      {:ok, match}
-    else
-      {:ok, %HTTPoison.Response{body: body, status_code: status}} -> {:error, %{body: body, status_code: status}}
-      error -> error
-    end
   end
 end
