@@ -1,6 +1,14 @@
 # BlitzElixirProject
 
-**TODO: Add description**
+## Instruction
+
+Add **:api_key** to **:blitz_elixir_project** key for desired config environment file.
+
+Run Summoner Tracking Function with:
+```elixir
+BlitzElixirProject.track_recent_opponents("user", "region")
+```
+Regions [euw1, na1, jp1] implemented, this can be altered via config.
 
 ## Installation
 
