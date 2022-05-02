@@ -8,7 +8,7 @@ defmodule BlitzElixirProject.Tracker.SummonerTracker do
     state = %{
       summoner: args[:summoner],
       last_match_id: "",
-      expiry: create_expiry(),
+      expiry: refresh_expiry(),
       agent: args[:agent] || TrackingList,
       pid: args[:pid] #for testing... used to send message back to test process
     }
@@ -25,8 +25,8 @@ defmodule BlitzElixirProject.Tracker.SummonerTracker do
     GenServer.cast(pid, :extend)
   end
 
-  def handle_cast(:extend, %{expiry: expiry} = state) do
-    new_state = Map.replace(state, :expiry, update_expiry(expiry))
+  def handle_cast(:extend, state) do
+    new_state = Map.replace(state, :expiry, refresh_expiry())
     {:noreply, new_state}
   end
 
@@ -54,8 +54,7 @@ defmodule BlitzElixirProject.Tracker.SummonerTracker do
 
   def terminate(_reason, %{summoner: summoner, agent: agent}), do: TrackingList.delete(agent, summoner)
 
-  defp create_expiry, do: update_expiry(DateTime.now!("Etc/UTC"))
-  defp update_expiry(expiry), do: DateTime.add(expiry, Config.tracker_expiry, :millisecond)
+  defp refresh_expiry, do: DateTime.add(DateTime.now!("Etc/UTC"), Config.tracker_expiry, :millisecond)
   defp is_expired?(expiry) do
     case DateTime.compare(DateTime.now!("Etc/UTC"), expiry) do
       :gt -> true

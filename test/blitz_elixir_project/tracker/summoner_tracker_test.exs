@@ -28,5 +28,22 @@ defmodule BlitzElixirProject.Tracker.SummonerTrackerTest do
       Process.sleep(100)
       assert Process.alive?(pid) === false
     end
+
+    test "success: extends summoner_tracker", context do
+      assert {:ok, pid} = SummonerTracker.start_link(
+        [
+          summoner: context.summoner,
+          pid: self(),
+          agent: context.agent
+        ])
+      Process.sleep(50)
+      assert Process.alive?(pid) === true
+
+      SummonerTracker.extend(pid)
+
+      Process.sleep(90)
+      assert Process.alive?(pid) === true
+    end
+
   end
 end

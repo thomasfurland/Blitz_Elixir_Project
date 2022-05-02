@@ -47,7 +47,7 @@ defmodule BlitzElixirProject.Riot.HTTPTest do
     end
 
     test "failure: gets non-existent user list of matches", context do
-      assert {:error, error} = HTTP.matches_by_puuid("", context.region, 5)
+      assert {:error, error} = HTTP.matches_by_puuid("",5, context.region)
       assert error.status_code === 403
     end
   end
