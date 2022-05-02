@@ -26,7 +26,7 @@ defmodule BlitzElixirProject.Tracker.SummonerTracker do
   end
 
   def handle_cast(:extend, %{expiry: expiry} = state) do
-    new_state = Map.replace(state, :extend, update_expiry(expiry))
+    new_state = Map.replace(state, :expiry, update_expiry(expiry))
     {:noreply, new_state}
   end
 
