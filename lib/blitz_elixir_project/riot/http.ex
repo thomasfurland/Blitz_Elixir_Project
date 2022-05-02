@@ -2,14 +2,13 @@ defmodule BlitzElixirProject.Riot.HTTP do
 
   @type http_response :: %{body: any(), status_code: any()}
 
-  alias BlitzElixirProject.Riot.{Match, Summoner, Server}
+  alias BlitzElixirProject.Riot.{Match, Summoner, Server, Helper}
   alias BlitzElixirProject.Config
 
   @spec summoners_by_name(String.t, String.t) ::
           {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Summoner.t}
   def summoners_by_name(name, region) do
-    path = "/lol/summoner/v4/summoners/by-name/#{name}"
-    with {:ok, response} <- regional_request(path, region) do
+    with {:ok, response} <- regional_request("/lol/summoner/v4/summoners/by-name/#{name}", region) do
       {:ok, summoner_from_response(response, region)}
     end
   end
@@ -23,8 +22,7 @@ defmodule BlitzElixirProject.Riot.HTTP do
   @spec summoners_by_puuid(String.t, String.t) ::
           {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Summoner.t}
   def summoners_by_puuid(puuid, region) do
-    path = "/lol/summoner/v4/summoners/by-puuid/#{puuid}"
-    with {:ok, response} <- regional_request(path, region) do
+    with {:ok, response} <- regional_request("/lol/summoner/v4/summoners/by-puuid/#{puuid}", region) do
       {:ok, summoner_from_response(response, region)}
     end
   end
@@ -32,16 +30,13 @@ defmodule BlitzElixirProject.Riot.HTTP do
   @spec matches_by_puuid(String.t, String.t, integer) ::
           {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, list}
   def matches_by_puuid(puuid, count, region) do
-    path = "/lol/match/v5/matches/by-puuid/#{puuid}/ids"
-    params = %{"count" => count}
-    continental_request(path, region, params)
+    continental_request("/lol/match/v5/matches/by-puuid/#{puuid}/ids", region, %{count: count})
   end
 
   @spec matches(String.t, String.t) ::
           {:error, binary | HTTPoison.Error.t | Jason.DecodeError.t | http_response} | {:ok, Match.t}
   def matches(match_id, region) do
-    path = "/lol/match/v5/matches/#{match_id}"
-    with {:ok, response} <- continental_request(path, region) do
+    with {:ok, response} <- continental_request("/lol/match/v5/matches/#{match_id}", region) do
       {:ok, match_from_response(response, region)}
     end
   end
@@ -53,16 +48,18 @@ defmodule BlitzElixirProject.Riot.HTTP do
   end
 
   defp regional_request(url_path, region, params \\ %{}) do
+    params = Map.put(params, :api_key, Config.api_key())
     with {:ok, server} <- Server.from_region(region),
-         {:ok, url} <- get_url(server.region_uri, url_path, params)
+         {:ok, url} <- Helper.get_url(server.region_uri, url_path, params)
     do
       send_request(url)
     end
   end
 
   defp continental_request(url_path, region, params \\ %{}) do
+    params = Map.put(params, :api_key, Config.api_key())
     with {:ok, server} <- Server.from_region(region),
-         {:ok, url} <- get_url(server.continent_uri, url_path, params)
+         {:ok, url} <- Helper.get_url(server.continent_uri, url_path, params)
     do
       send_request(url)
     end
@@ -77,22 +74,5 @@ defmodule BlitzElixirProject.Riot.HTTP do
       {:ok, %HTTPoison.Response{body: body, status_code: status}} -> {:error, %{body: body, status_code: status}}
       error -> error
     end
-  end
-
-  defp get_url(uri, path, params) do
-    with {:ok, uri} <- URI.new(uri) do
-      url =
-        uri
-        |> Map.replace(:path, path)
-        |> Map.replace(:query, get_query(params))
-        |> URI.to_string
-      {:ok, url}
-    end
-  end
-
-  defp get_query(params) do
-    params
-    |> Map.put("api_key", Config.api_key())
-    |> URI.encode_query
   end
 end

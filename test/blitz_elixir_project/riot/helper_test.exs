@@ -40,4 +40,15 @@ defmodule BlitzElixirProject.Riot.HelperTest do
       assert length(errors) === 2
     end
   end
+
+  describe "get_url/3" do
+    test "success: return valid url string" do
+      assert {:ok, url} = Helper.get_url("http://www.fake.com/", "/fake_path", %{fakekey: "fakeparam"})
+      assert url === "http://www.fake.com/fake_path?fakekey=fakeparam"
+    end
+
+    test "failure: invalid character in url" do
+      assert {:error, _} = Helper.get_url("http://www.fa\\e.com/", "/fake_path", %{fakekey: "fakeparam"})
+    end
+  end
 end

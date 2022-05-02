@@ -21,4 +21,16 @@ defmodule BlitzElixirProject.Riot.Helper do
   defp accumulate_result({:ok, {:ok, result}}, {results, errors}), do: {[result | results], errors}
   defp accumulate_result({:ok, {:error, _} = error}, {results, errors}), do: {results, [error | errors]}
   defp accumulate_result({:error, error}, {results, errors}), do: {results, [error | errors]}
+
+  @spec get_url(String.t | URI.t(), String.t, map) :: {:error, String.t} | {:ok, String.t}
+  def get_url(uri, path, params) do
+    with {:ok, uri} <- URI.new(uri) do
+      url =
+        uri
+        |> Map.replace(:path, path)
+        |> Map.replace(:query, URI.encode_query(params))
+        |> URI.to_string
+      {:ok, url}
+    end
+  end
 end
